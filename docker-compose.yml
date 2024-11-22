@@ -1,0 +1,31 @@
+name: onedev
+services:
+  app:
+    image: 1dev/server:latest
+    container_name: OneDev
+    hostname: onedev
+    ports:
+      - '172.17.0.1:59041:6610/tcp'
+    environment:
+      - initial_user=${APP_ROOT_NAME:-onedev}
+      - initial_password=${APP_TEMP_PASS=:-passwd}
+      - initial_server_url=https://onedev.${BASE_DOMAIN_NAME}
+      - initial_email=${APP_ROOT_NAME:-onedev}@${BASE_DOMAIN_NAME:-example.com}
+    volumes:
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /var/lib/srv/${USER}/docker/1dev/server/latest/rootfs/data/onedev:/opt/onedev:rw
+    healthcheck:
+      test: timeout 10s bash -c ':> /dev/tcp/127.0.0.1/6610' || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 90s
+    networks:
+      - onedev
+
+networks:
+  onedev:
+    name: onedev
+    external: false
