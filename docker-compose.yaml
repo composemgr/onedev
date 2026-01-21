@@ -1,0 +1,43 @@
+# nginx proxy address - http://172.17.0.1:59041
+
+name: onedev
+x-logging: &default-logging
+  options:
+    max-size: '5m'
+    max-file: '1'
+  driver: json-file
+
+services:
+  app:
+    image: 1dev/server:latest
+    container_name: onedev-app
+    hostname: ${BASE_HOST_NAME:-$HOSTNAME}
+    restart: always
+    pull_policy: always
+    logging: *default-logging
+    environment:
+      TZ: ${TZ:-America/New_York}
+      initial_server_url: https://${BASE_HOST_NAME:-$HOSTNAME}
+      initial_user: ${APP_ADMIN_USER:-administrator}
+      initial_password: ${APP_ADMIN_PASS:-changeme_admin_password}
+      initial_email: ${APP_ADMIN_USER:-administrator}@${BASE_DOMAIN_NAME:-${BASE_HOST_NAME}}
+    ports:
+      - '172.17.0.1:59041:6610/tcp'
+    volumes:
+      - './rootfs/data/onedev:/opt/onedev:rw'
+      - '/etc/timezone:/etc/timezone:ro'
+      - '/etc/localtime:/etc/localtime:ro'
+      - '/var/run/docker.sock:/var/run/docker.sock:ro'
+    healthcheck:
+      test: timeout 10s bash -c ':> /dev/tcp/127.0.0.1/6610' || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 90s
+    networks:
+      - onedev
+
+networks:
+  onedev:
+    name: onedev
+    external: false
