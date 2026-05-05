@@ -48,7 +48,7 @@ See `docker-compose.yaml` for complete list of configurable options.
 
 ## 📂 Volumes
 
-- `./rootfs/data/onedev` - Data storage
+- `./volumes/data/onedev` - Data storage
 
 ## 🔐 Security
 
