@@ -20,7 +20,7 @@ services:
       initial_server_url: https://${BASE_HOST_NAME:-$HOSTNAME}
       initial_user: ${APP_ADMIN_USER:-administrator}
       initial_password: ${APP_ADMIN_PASS:-changeme_admin_password}
-      initial_email: ${APP_ADMIN_USER:-administrator}@${BASE_DOMAIN_NAME:-${BASE_HOST_NAME}}
+      initial_email: ${APP_ADMIN_USER:-administrator}@${BASE_DOMAIN_NAME:-example.com}
     ports:
       - '172.17.0.1:59041:6610/tcp'
     volumes:
