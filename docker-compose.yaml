@@ -21,6 +21,8 @@ services:
       initial_user: ${APP_ADMIN_USER:-administrator}
       initial_password: ${APP_ADMIN_PASS:-changeme_admin_password}
       initial_email: ${APP_ADMIN_USER:-administrator}@${BASE_DOMAIN_NAME:-example.com}
+      CONTAINER_NAME: onedev-app
+      HOSTNAME: ${BASE_HOST_NAME:-$HOSTNAME}
     ports:
       - '172.17.0.1:59041:6610/tcp'
     volumes:
@@ -36,8 +38,30 @@ services:
       start_period: 90s
     networks:
       - onedev
+      - proxy
+      - cloudflare
+    labels:
+      - 'traefik.enable=true'
+      - 'cloudflare.enable=true'
+      - 'traefik.docker.network=proxy'
+      - 'cloudflare.service=http://onedev-app:6610'
+      - 'cloudflare.hostname=onedev.${CLOUDFLARE_ZONE_NAME:-}'
+      - 'traefik.http.routers.onedev-app.entrypoints=http'
+      - 'traefik.http.routers.onedev-app-secure.tls=true'
+      - 'traefik.http.routers.onedev-app.rule=Host($(${BASE_HOST_NAME:-$HOSTNAME}))'
+      - 'traefik.http.middlewares.onedev-app-https-redirect.redirectscheme.scheme=https'
+      - 'traefik.http.routers.onedev-app.middlewares=onedev-app-https-redirect'
+      - 'traefik.http.routers.onedev-app-secure.entrypoints=https'
+      - 'traefik.http.routers.onedev-app-secure.rule=Host($(${BASE_HOST_NAME:-$HOSTNAME}))'
+      - 'traefik.http.routers.onedev-app-secure.tls.certresolver=cloudflare'
+      - 'traefik.http.routers.onedev-app-secure.service=onedev-app'
+      - 'traefik.http.services.onedev-app.loadbalancer.server.port=6610'
 
 networks:
   onedev:
     name: onedev
     external: false
+  proxy:
+    external: true
+  cloudflare:
+    external: true
